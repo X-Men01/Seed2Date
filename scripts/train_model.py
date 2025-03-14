@@ -19,37 +19,37 @@ def main():
     print("Starting training with seed-optimized augmentation parameters")
     model.train(
         # Basic training parameters
-        data='/Users/ahmedalkhulayfi/Downloads/Date_Seeds',
+        data='/home/cs2r/Desktop/Seed2Date-main/Date_Seeds',
         epochs=600,
         imgsz=640,
         batch=64,
         device=device,
         workers=8,
         cache=True,
-        patience=20,
+        patience=30,
         verbose=True,
-        lr0=1e-3,
-        lrf=1e-4,
-        optimizer='AdamW',
+        lr0=0.01,
+        lrf=0.01,
+        optimizer='auto',
         augment=True,
         dropout=0.2,
         
-        hsv_h=0.015,          # Minimal hue variation
-        hsv_s=0.4,            # Reduced saturation variation
-        hsv_v=0.4,            # Moderate brightness variation
-        degrees=15.0,         # Moderate rotation
-        translate=0.1,        # Small translation
-        scale=0.1,            # Reduced scale variation
-        shear=0.0,            # No shear
-        perspective=0.0,      # No perspective transform
-        flipud=0.2,           # Some vertical flips
-        fliplr=0.5,           # Horizontal flips
-        mosaic=0.0,           # Disable mosaic
-        mixup=0.0,            # No mixup
-        copy_paste=0.0,       # No copy-paste
-        auto_augment=None,  # Disable auto augmentation
-        erasing=0.0,          # No random erasing
-        crop_fraction=1.0,    # Full crop
+        hsv_h=0.015,          
+        hsv_s=0.6,            
+        hsv_v=0.4,           
+        degrees=15.0,        
+        translate=0.15,        
+        scale=0.25,           
+        shear=0.0,           
+        perspective=0.0,     
+        flipud=0.2,           
+        fliplr=0.5,          
+        mosaic=0.5,          
+        mixup=0.0,            
+        copy_paste=0.0,       
+        auto_augment="randaugment",  
+        erasing=0.15,          
+        crop_fraction=1.0,    
     )
     
     # Evaluate on test set
