@@ -1,124 +1,99 @@
 
+# Seed2Date: Date Seed Classification & Segmentation
 
-# Seed2Date: Date Seed Classification
+A comprehensive deep learning project for analyzing date fruits through their seeds, featuring two complementary approaches:
 
-A deep learning project for classifying different varieties of date fruits based on images of their seeds.
+1. **Classification**: Identifying date varieties from seed images
+2. **Segmentation**: Detecting and segmenting date seeds in complex environments
 
-<div style="text-align: center;">
-    <img src="results/results_explor_data/sample_images.png" alt="Date Seed Example" width="500">
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <img src="results/results_explor_data/sample_images.png" alt="Date Seed Classification" width="48%">
+    <img src="images/synthetic_dataset.jpg" alt="Date Seed Segmentation" width="48%">
 </div>
 
 ## Project Overview
 
-Seed2Date uses computer vision and deep learning to accurately identify four varieties of date seeds: Khalas, Mabroom, Safawi, and Sukkari. By analyzing seed morphology, the model can distinguish between varieties with high accuracy, potentially assisting in agricultural quality control, research, and varietal authentication.
+Seed2Date applies advanced computer vision techniques to accurately identify and analyze four varieties of date seeds: Khalas, Mabroom, Safawi, and Sukkari. The project offers two complementary approaches:
+
+### Classification Approach
+
+Accurately identifies the variety of a date seed from its image using a lightweight YOLOv11 classification model, achieving 98.3% accuracy.
+
+### Segmentation Approach
+
+Precisely detects and segments date seeds in various environments using a specialized pipeline:
+1. Generate high-quality masks with SAM (Segment Anything Model)
+2. Extract seeds with transparency 
+3. Create synthetic training data with realistic variations
+4. Train robust segmentation models that generalize to real-world conditions
 
 ## Dataset
 
-The dataset consists of high-resolution images of date seeds (5184×3456 pixels), organized as follows:
+### Classification Dataset
+
+The classification dataset consists of high-resolution images of date seeds (5184×3456 pixels):
 
 ```
 Date_Seeds/
-├── train/
-│   ├── Khalas/    (240 images)
-│   ├── Mabroom/   (240 images)
-│   ├── Safawi/    (240 images)
-│   └── Sukkari/   (240 images)
-├── val/
-│   ├── Khalas/    (30 images)
-│   ├── Mabroom/   (30 images)
-│   ├── Safawi/    (30 images)
-│   └── Sukkari/   (30 images)
-└── test/
-    ├── Khalas/    (30 images)
-    ├── Mabroom/   (30 images)
-    ├── Safawi/    (30 images)
-    └── Sukkari/   (30 images)
+├── train/  (240 images per variety)
+├── val/    (30 images per variety)
+└── test/   (30 images per variety)
 ```
 
-### Morphometric Analysis
+### Segmentation Dataset
 
-A comprehensive analysis of all 960 seed images in the training set revealed distinctive morphological differences between varieties:
+The segmentation approach uses:
+1. Original seed photos with SAM-generated masks
+2. Extracted transparent seed images 
+3. Synthetic dataset (2000+ images) created by placing seeds on diverse backgrounds
 
-| Variety | Aspect Ratio (Mean) | Aspect Ratio (Median) | Width (Mean px) | Height (Mean px) | Color Profile (RGB) |
-|---------|---------------------|----------------------|----------------|-----------------|---------------------|
-| Khalas  | 0.63 ± 0.49         | 0.42                 | 1180 ± 704     | 2172 ± 671      | [219, 219, 141]     |
-| Mabroom | 1.06 ± 0.64         | 0.84                 | 1765 ± 611     | 2057 ± 935      | [222, 221, 140]     |
-| Safawi  | 1.10 ± 0.64         | 0.91                 | 1934 ± 609     | 2165 ± 907      | [222, 221, 140]     |
-| Sukkari | 1.19 ± 0.50         | 1.12                 | 2423 ± 694     | 2178 ± 494      | [219, 219, 136]     |
+```
+segmentation/
+├── extracted_seeds_transparent_background/
+│   ├── images/
+│   │   ├── Khalas/
+│   │   ├── Mabroom/
+│   │   ├── Safawi/
+│   │   └── Sukkari/
+│   └── labels/
+├── backgrounds/  (350+ diverse background images)
+└── synthetic/
+    ├── train/
+    ├── val/
+    └── test/
+```
 
-Key observations from the morphometric analysis:
+## Morphometric Analysis
 
-1. **Aspect Ratio Differentiation**: Khalas seeds are distinctly more elongated (median aspect ratio 0.42) compared to Sukkari seeds which are wider (median aspect ratio 1.12)
+A comprehensive analysis of seed images revealed distinctive morphological differences between varieties:
 
-2. **Width Variation**: Sukkari seeds are significantly wider (mean 2423px) than Khalas seeds (mean 1180px)
+| Variety | Aspect Ratio (Mean) | Width (Mean px) | Height (Mean px) | Color Profile (RGB) |
+|---------|---------------------|----------------|-----------------|---------------------|
+| Khalas  | 0.63 ± 0.49         | 1180 ± 704     | 2172 ± 671      | [219, 219, 141]     |
+| Mabroom | 1.06 ± 0.64         | 1765 ± 611     | 2057 ± 935      | [222, 221, 140]     |
+| Safawi  | 1.10 ± 0.64         | 1934 ± 609     | 2165 ± 907      | [222, 221, 140]     |
+| Sukkari | 1.19 ± 0.50         | 2423 ± 694     | 2178 ± 494      | [219, 219, 136]     |
 
-3. **Color Consistency**: All varieties show similar color profiles, indicating that shape characteristics are more discriminative than color
+Key observations: Khalas seeds are distinctly more elongated, while Sukkari seeds are wider. Shape characteristics are more discriminative than color.
 
-4. **High Intra-class Variability**: The high standard deviations in aspect ratio indicate considerable variation within each variety, which makes classification challenging
+## Models
 
-## Model Architecture
+### Classification Model
 
-Seed2Date uses YOLOv11 classification architecture (yolo11n-cls) with the following key components:
-
-- **Backbone**: Optimized for seed feature extraction
-- **Classification Head**: Specialized for the four date varieties
+- **Architecture**: YOLOv11n-cls 
+- **Parameters**: 1.5M
 - **Input Resolution**: 640×640 pixels
-- **Parameters**: 1.5M parameters
+- **Training**: 96 epochs with optimized augmentation
 
-## Augmentation Strategy
+### Segmentation Models
 
-After extensive experimentation, we identified the optimal augmentation strategy that preserves critical seed characteristics while enhancing model generalization:
-
-```python
-# Optimal augmentation configuration
-augmentation_params = {
-    'hsv_h': 0.015,          # Minimal hue variation
-    'hsv_s': 0.6,            # Moderate saturation
-    'hsv_v': 0.4,            # Moderate brightness
-    'degrees': 15.0,         # Moderate rotation
-    'translate': 0.15,       # Small translation
-    'scale': 0.25,           # Moderate scaling
-    'mosaic': 0.5,           # Partial mosaic
-    'auto_augment': "randaugment",  # Additional variety
-    'erasing': 0.15,         # Light random erasing
-    'flipud': 0.2,
-    'fliplr': 0.5,
-  
-}
-```
-
-This configuration was determined through systematic experimentation, with special attention to preserving the aspect ratio characteristics that differentiate seed varieties.
-
-## Training Details
-
-The model was trained in multiple phases with careful hyperparameter tuning:
-
-```python
-model.train(
-    # Training parameters
-    epochs=600,
-    batch=64,
-    imgsz=640,
-    patience=30,
-    
-    # Optimizer settings
-    lr0=0.01,
-    lrf=0.01,
-    optimizer='AdamW',
-    weight_decay=0.0005,
-    cos_lr=True,
-
-    # Augmentation settings (as above)
-```
-
-### Training Process
-
-- **Training**: 96 epochs with early stopping (patience=30)
-
+Two YOLOv11n-seg models were trained:
+1. **Model 1**: Trained on synthetic data only
+2. **Model 2**: Trained on synthetic + real data
 
 ## Results
 
-The model achieved excellent performance after optimization:
+### Classification Performance
 
 | Metric | Score |
 |--------|-------|
@@ -126,74 +101,85 @@ The model achieved excellent performance after optimization:
 | Validation Accuracy | 98.3% |
 | Test Accuracy | 98.3% |
 
+<img src="results/train_results/results.png" alt="Classification Results" width="500" style="display: block; margin: auto;">
 
-<img src="results/train_results/results.png" alt="Date Seed Example" width="500">
+### Segmentation Performance
+
+Model performance on synthetic test data:
+
+| Model | Precision | Recall | mAP50 | mAP50-95 |
+|-------|-----------|--------|-------|----------|
+| Synthetic Only | 0.946 | 0.948 | 0.980 | 0.801 |
+| Synthetic + Real | 0.960 | 0.908 | 0.978 | 0.810 |
+
+<img src="images/performance_chart.jpg" alt="Segmentation Performance" width="500" style="display: block; margin: auto;">
+
+## Segmentation Pipeline
+
+The segmentation workflow consists of four key steps:
+
+### 1. Seed Segmentation with SAM
+
+First, we use SAM to generate high-quality masks for date seeds from controlled images.
+
+<img src="images/sam_segmentation.jpg" alt="SAM Segmentation" width="500" style="display: block; margin: auto;">
+
+### 2. Extract Seeds with Transparency
+
+Next, we extract the segmented seeds with transparency for synthetic data generation.
+
+<img src="images/transparent_seeds.jpg" alt="Transparent Seeds" width="800"  style="display: block; margin: auto;">
+
+### 3. Generate Synthetic Dataset
+
+We place extracted seeds on diverse backgrounds with random variations in position, scale, and rotation.
+
+<img src="images/synthetic_dataset.jpg" alt="Synthetic Dataset" width="500" style="display: block; margin: auto;">
+
+### 4. Train Segmentation Models
+
+Finally, we train YOLOv11 segmentation models on the synthetic dataset.
 
 
-*Training and validation metrics over epochs*
-
-
-
-### Confusion Matrix
-
-The model shows excellent discrimination between all four date seed varieties, with minimal confusion between classes.
-
-<div style="text-align: center;">
-    <img src="results/train_results/confusion_matrix.png" alt="Confusion Matrix" width="500">
-</div>
-
-
-
-## Installation and Usage
-
-
-
-### Setup
+### Classification
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/Seed2Date.git
-cd Seed2Date
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### Training
-
-```bash
+# Train classification model
 python scripts/train_model.py
-```
 
-### Inference
-
-```python
+# Inference
 from ultralytics import YOLO
-
-# Load the trained model
 model = YOLO('models/Seed2Date-YOLOv11n-best.pt')
-
-# Classify a single image
 results = model('path/to/seed_image.jpg')
 print(f"Predicted class: {results[0].names[results[0].probs.top1]}")
-print(f"Confidence: {results[0].probs.top1conf:.2f}")
-
-
 ```
 
-## Data Exploration
 
-The `results/morphometrics` directory contains comprehensive analysis of all seed images, including:
+## Project Structure
 
-- Aspect ratio distributions for each variety
-- Dimensional measurements for width and height
-- Color profile analysis
-- Statistical summaries of morphological characteristics
-
-These analyses informed our model design and augmentation strategies, particularly in understanding the importance of preserving aspect ratio information during training.
-
+```
+Seed2Date/
+├── README.md
+├── images/                    # Visualization images for README
+├── models/                    # Trained model weights
+├── results/                   # Analysis results
+│   ├── morphometrics/         # Seed measurement analysis
+│   ├── results_explor_data/   # Data exploration results
+│   └── train_results/         # Training metrics and visualizations
+├── scripts/                   # Classification scripts
+│   ├── explore_data.py
+│   ├── prepare_data.py
+│   ├── seed_measurements.py
+│   └── train_model.py
+└── segmentation/              # Segmentation pipeline
+    ├── README.md              # Detailed segmentation documentation
+    ├── generate_seed_masks_sam.py
+    ├── extract_transparent_seeds.py
+    ├── generate_synthetic_data.py
+    └── prepare_data_split.py
+```
 
 ## Acknowledgments
 
 - [Ultralytics](https://github.com/ultralytics/ultralytics) for the YOLO implementation
-
+- [Segment Anything Model (SAM)](https://github.com/facebookresearch/segment-anything) for high-quality seed segmentation
