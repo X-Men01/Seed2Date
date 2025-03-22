@@ -1,8 +1,6 @@
 
 # Date Seed Segmentation Pipeline
 
-
-
 ## Overview
 
 This project implements an end-to-end pipeline for date seed segmentation with the following goals:
@@ -44,12 +42,48 @@ python generate_synthetic_data.py
 
 ![Synthetic Dataset Example](../images/synthetic_dataset.jpg)
 
+### 4. Train Segmentation Models ✓
+
+Finally, we train YOLOv8 segmentation models on the synthetic dataset and evaluate performance.
+
+```bash
+python train_model.py
+```
+
+## Training Metrics and Visualizations
+
+During training, YOLOv8 generates comprehensive metrics and visualizations to track model performance:
+
+### Training Progress
+
+![Training Results](../images/results.png)
+
+### Precision-Recall Curves
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <img src="../images/train_results/MaskPR_curve.png" width="48%" alt="Mask Precision-Recall Curve">
+    <img src="../images/train_results/BoxPR_curve.png" width="48%" alt="Box Precision-Recall Curve">
+</div>
+
+### Confusion Matrix
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <img src="../images/train_results/confusion_matrix.png" width="48%" alt="Confusion Matrix">
+    <img src="../images/train_results/confusion_matrix_normalized.png" width="48%" alt="Normalized Confusion Matrix">
+</div>
+
+### Example Predictions
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <img src="../images/train_results/val_batch0_pred.jpg" width="48%" alt="Validation Batch Predictions">
+    <img src="../images/train_results/val_batch0_labels.jpg" width="48%" alt="Validation Batch Ground Truth">
+</div>
 
 ## Model Performance
 
 We trained two models with different training data:
 
-### Model 1: Synthetic Data Only
+### Model 1: Synthetic Data Only (seed2date_segmentation_synthetic.pt)
 
 | Class | Precision | Recall | mAP50 | mAP50-95 |
 |-------|-----------|--------|-------|----------|
@@ -59,7 +93,7 @@ We trained two models with different training data:
 | Safawi | 0.962 | 0.967 | 0.985 | 0.830 |
 | Sukkari | 0.962 | 0.980 | 0.989 | 0.813 |
 
-### Model 2: Synthetic + Real Data
+### Model 2: Synthetic + Real Data (seed2date_segmentation_combined.pt)
 
 | Class | Precision | Recall | mAP50 | mAP50-95 |
 |-------|-----------|--------|-------|----------|
